@@ -32,12 +32,19 @@ func main() {
 
 	// Repositories
 	userRepo := repository.NewUserRepo(db)
+	categoryRepo := repository.NewCategoryRepo(db)
+	quizRepo := repository.NewQuizRepo(db)
+	questionRepo := repository.NewQuestionRepo(db)
+	optionRepo := repository.NewOptionRepo(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
+	categoryHandler := handler.NewCategoryHandler(categoryRepo)
+	quizHandler := handler.NewQuizHandler(quizRepo)
+	questionHandler := handler.NewQuestionHandler(questionRepo, optionRepo)
 
 	r := chi.NewRouter()
 
@@ -62,7 +69,32 @@ func main() {
 	// Admin routes (protected)
 	r.Route("/api/admin", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-		// Category, Quiz, Question routes will be added in later steps
+
+		r.Route("/categories", func(r chi.Router) {
+			r.Get("/", categoryHandler.List)
+			r.Get("/{id}", categoryHandler.Get)
+			r.Post("/", categoryHandler.Create)
+			r.Put("/{id}", categoryHandler.Update)
+			r.Delete("/{id}", categoryHandler.Delete)
+		})
+
+		r.Route("/quizzes", func(r chi.Router) {
+			r.Get("/", quizHandler.List)
+			r.Get("/{id}", quizHandler.Get)
+			r.Post("/", quizHandler.Create)
+			r.Put("/{id}", quizHandler.Update)
+			r.Delete("/{id}", quizHandler.Delete)
+
+			r.Route("/{quizId}/questions", func(r chi.Router) {
+				r.Get("/", questionHandler.ListByQuiz)
+				r.Post("/", questionHandler.Create)
+			})
+		})
+
+		r.Route("/questions", func(r chi.Router) {
+			r.Put("/{id}", questionHandler.Update)
+			r.Delete("/{id}", questionHandler.Delete)
+		})
 	})
 
 	log.Printf("listening on :%s", cfg.Port)
