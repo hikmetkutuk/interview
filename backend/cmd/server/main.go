@@ -45,6 +45,7 @@ func main() {
 	categoryHandler := handler.NewCategoryHandler(categoryRepo)
 	quizHandler := handler.NewQuizHandler(quizRepo)
 	questionHandler := handler.NewQuestionHandler(questionRepo, optionRepo)
+	publicHandler := handler.NewPublicHandler(categoryRepo, quizRepo, questionRepo, optionRepo)
 
 	r := chi.NewRouter()
 
@@ -65,6 +66,12 @@ func main() {
 		r.Post("/register", authHandler.Register)
 		r.Post("/login", authHandler.Login)
 	})
+
+	// Public routes
+	r.Get("/api/categories", publicHandler.ListCategories)
+	r.Get("/api/quizzes", publicHandler.ListQuizzes)
+	r.Get("/api/quizzes/{id}", publicHandler.GetQuiz)
+	r.Post("/api/quizzes/{id}/submit", publicHandler.SubmitQuiz)
 
 	// Admin routes (protected)
 	r.Route("/api/admin", func(r chi.Router) {
