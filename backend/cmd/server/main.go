@@ -9,10 +9,19 @@ import (
 
 	"quiz-backend/internal/config"
 	"quiz-backend/internal/database"
+	"quiz-backend/internal/handler"
+	"quiz-backend/internal/middleware"
+	"quiz-backend/internal/repository"
+	"quiz-backend/internal/service"
 )
+
+const fallbackJWTSecret = "change-me-in-production"
 
 func main() {
 	cfg := config.Load()
+	if cfg.JWTSecret == "" || cfg.JWTSecret == fallbackJWTSecret {
+		log.Fatal("JWT_SECRET must be set to a non-default value")
+	}
 
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
@@ -20,6 +29,15 @@ func main() {
 	}
 	defer db.Close()
 	log.Println("connected to database")
+
+	// Repositories
+	userRepo := repository.NewUserRepo(db)
+
+	// Services
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+
+	// Handlers
+	authHandler := handler.NewAuthHandler(authService)
 
 	r := chi.NewRouter()
 
@@ -33,6 +51,18 @@ func main() {
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("ok"))
+	})
+
+	// Auth routes (public)
+	r.Route("/api/auth", func(r chi.Router) {
+		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
+	})
+
+	// Admin routes (protected)
+	r.Route("/api/admin", func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		// Category, Quiz, Question routes will be added in later steps
 	})
 
 	log.Printf("listening on :%s", cfg.Port)
