@@ -1,0 +1,34 @@
+# Go
+backend/bin/
+backend/tmp/
+*.exe
+*.test
+*.out
+
+# Node
+ui/node_modules/
+ui/dist/
+ui/.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project
+todo.md
+
+# Docker
+.env
+*.log
+
+# Environment
+.env.local
+.env.production
+
+CLAUDE.md
