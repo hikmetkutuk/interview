@@ -1,28 +1,27 @@
 import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
+import { motion } from "framer-motion";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import api from "../../api/client";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { Card, CardContent } from "../../components/ui/Card";
 import type { Category } from "../../types";
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; edit: Category | null }>({
-    open: false,
-    edit: null,
-  });
+  const [modal, setModal] = useState<{ open: boolean; edit: Category | null }>({ open: false, edit: null });
   const [form, setForm] = useState({ name: "", slug: "", description: "" });
   const [saving, setSaving] = useState(false);
 
   const fetchCategories = useCallback(() => {
-    api
-      .get<Category[]>("/admin/categories")
+    api.get<Category[]>("/admin/categories")
       .then((res) => setCategories(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
   const openCreate = () => {
     setForm({ name: "", slug: "", description: "" });
@@ -38,18 +37,11 @@ export default function AdminCategories() {
     e.preventDefault();
     setSaving(true);
     try {
-      if (modal.edit) {
-        await api.put(`/admin/categories/${modal.edit.id}`, form);
-      } else {
-        await api.post("/admin/categories", form);
-      }
+      if (modal.edit) await api.put(`/admin/categories/${modal.edit.id}`, form);
+      else await api.post("/admin/categories", form);
       setModal({ open: false, edit: null });
       fetchCategories();
-    } catch {
-      // ignore
-    } finally {
-      setSaving(false);
-    }
+    } catch { /* ignore */ } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -58,118 +50,75 @@ export default function AdminCategories() {
     fetchCategories();
   };
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading) return <p className="text-muted-foreground">Loading...</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
-        >
-          Add Category
-        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Categories</h1>
+          <p className="text-sm text-muted-foreground mt-1">{categories.length} total</p>
+        </div>
+        <Button onClick={openCreate} className="gap-1.5">
+          <Plus className="h-4 w-4" /> Add Category
+        </Button>
       </div>
 
       {categories.length === 0 ? (
-        <p className="text-gray-500">No categories yet.</p>
+        <Card><CardContent className="text-center py-12 text-muted-foreground">No categories yet.</CardContent></Card>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <Card className="overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/50">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Slug</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Slug</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
               {categories.map((cat) => (
-                <tr key={cat.id} className="border-t border-gray-100">
-                  <td className="px-4 py-3 text-gray-900">{cat.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{cat.slug}</td>
+                <tr key={cat.id} className="border-t border-border">
+                  <td className="px-4 py-3 text-foreground font-medium">{cat.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{cat.slug}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(cat)}
-                      className="text-indigo-600 hover:underline mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(cat.id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(cat)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(cat.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
 
       {modal.open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4">
-              {modal.edit ? "Edit Category" : "New Category"}
-            </h2>
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <div>
-                <label htmlFor="cat-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  id="cat-name"
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="cat-slug" className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                <input
-                  id="cat-slug"
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="cat-desc" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <input
-                  id="cat-desc"
-                  type="text"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="flex justify-end gap-3 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setModal({ open: false, edit: null })}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  {saving ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </form>
-          </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="w-full max-w-md">
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg font-bold mb-4">{modal.edit ? "Edit" : "New"} Category</h2>
+                <form onSubmit={handleSave} className="flex flex-col gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="cat-name" className="text-sm font-medium">Name</label>
+                    <Input id="cat-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="cat-slug" className="text-sm font-medium">Slug</label>
+                    <Input id="cat-slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="cat-desc" className="text-sm font-medium">Description</label>
+                    <Input id="cat-desc" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  </div>
+                  <div className="flex justify-end gap-3 mt-2">
+                    <Button type="button" variant="outline" onClick={() => setModal({ open: false, edit: null })}>Cancel</Button>
+                    <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       )}
     </div>

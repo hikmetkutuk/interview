@@ -1,4 +1,7 @@
+import { Code2 } from "lucide-react";
 import type { Question, Option } from "../types";
+import { Badge } from "./ui/Badge";
+import { Card } from "./ui/Card";
 
 interface Props {
   readonly question: Question;
@@ -10,40 +13,37 @@ interface Props {
 }
 
 export default function QuestionCard({
-  question,
-  options,
-  selectedIds,
-  onSelect,
-  questionIndex,
-  totalQuestions,
+  question, options, selectedIds, onSelect, questionIndex, totalQuestions,
 }: Props) {
   const isMulti = question.type === "maq";
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-indigo-600">
+        <Badge variant="default">
           Question {questionIndex + 1} of {totalQuestions}
-        </span>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
-          {question.type.toUpperCase()} &middot; {question.score} pts
+        </Badge>
+        <span className="text-xs text-muted-foreground font-mono">
+          {question.type.toUpperCase()} &middot; {question.score} pt
         </span>
       </div>
 
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">{question.text}</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-3">{question.text}</h2>
 
       {question.image_url && (
-        <img
-          src={question.image_url}
-          alt=""
-          className="max-w-full rounded-md mb-3"
-        />
+        <img src={question.image_url} alt="" className="max-w-full rounded-lg mb-3" />
       )}
 
       {question.code_snippet && (
-        <pre className="bg-gray-900 text-green-300 text-sm p-4 rounded-md overflow-x-auto mb-3">
-          <code>{question.code_snippet}</code>
-        </pre>
+        <div className="bg-zinc-950 dark:bg-black border border-border rounded-lg mb-3 overflow-hidden">
+          <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border bg-zinc-900">
+            <Code2 className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground font-mono">code</span>
+          </div>
+          <pre className="text-green-400 text-sm p-4 overflow-x-auto font-mono leading-relaxed">
+            <code>{question.code_snippet}</code>
+          </pre>
+        </div>
       )}
 
       <div className="flex flex-col gap-2 mt-4">
@@ -52,10 +52,10 @@ export default function QuestionCard({
           return (
             <label
               key={opt.id}
-              className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+              className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all duration-150 ${
                 checked
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-gray-200 hover:bg-gray-50"
+                  ? "border-primary/50 bg-primary/5 text-foreground"
+                  : "border-border hover:border-primary/30 hover:bg-accent"
               }`}
             >
               <input
@@ -63,13 +63,13 @@ export default function QuestionCard({
                 name={`question-${question.id}`}
                 checked={checked}
                 onChange={() => onSelect(opt.id)}
-                className="accent-indigo-600"
+                className="accent-primary h-4 w-4"
               />
-              <span className="text-sm text-gray-800">{opt.text}</span>
+              <span className="text-sm">{opt.text}</span>
             </label>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }

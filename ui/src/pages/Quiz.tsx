@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import api from "../api/client";
 import Timer from "../components/Timer";
 import QuestionCard from "../components/QuestionCard";
+import { Button } from "../components/ui/Button";
 import type { QuizWithQuestions, QuizResult } from "../types";
 
 export default function Quiz() {
@@ -14,6 +17,7 @@ export default function Quiz() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     api.get<QuizWithQuestions>(`/quizzes/${id}`)
@@ -25,14 +29,12 @@ export default function Quiz() {
   const submitQuiz = useCallback(() => {
     if (submitted || !quiz) return;
     setSubmitted(true);
-
     const payload = {
-      answers: Object.entries(answers).map(([questionId, optionIds]) => ({
-        question_id: questionId,
-        selected_option_ids: optionIds,
+      answers: Object.entries(answers).map(([qid, oids]) => ({
+        question_id: qid,
+        selected_option_ids: oids,
       })),
     };
-
     api.post<QuizResult>(`/quizzes/${id}/submit`, payload)
       .then((res) => navigate("/result", { state: res.data }))
       .catch(() => setSubmitted(false));
@@ -42,7 +44,6 @@ export default function Quiz() {
     if (!quiz) return;
     const q = quiz.questions[currentIdx];
     if (!q) return;
-
     setAnswers((prev) => {
       const current = prev[q.id] || [];
       if (q.type === "maq") {
@@ -55,78 +56,97 @@ export default function Quiz() {
     });
   };
 
+  const goTo = (idx: number) => {
+    setDirection(idx > currentIdx ? 1 : -1);
+    setCurrentIdx(idx);
+  };
+
   if (loading || !quiz) {
-    return <p className="text-gray-500">Loading quiz...</p>;
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-card rounded-lg w-1/3" />
+          <div className="h-64 bg-card rounded-xl" />
+        </div>
+      </div>
+    );
   }
 
   if (quiz.questions.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="mb-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
-        >
-          &larr; Back
-        </button>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
-          <p className="mt-3 text-gray-600">This quiz has no questions yet.</p>
-        </div>
+      <div className="max-w-2xl mx-auto text-center py-16">
+        <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
+        <p className="text-muted-foreground mt-3">This quiz has no questions yet.</p>
+        <Button className="mt-6" variant="outline" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" /> Go Back
+        </Button>
       </div>
     );
   }
 
   const question = quiz.questions[currentIdx];
   const selectedIds = answers[question.id] || [];
+  const isLast = currentIdx === quiz.questions.length - 1;
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
-          <p className="text-sm text-gray-500">{quiz.questions.length} questions</p>
+          <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {quiz.questions.length} questions
+          </p>
         </div>
         <Timer seconds={quiz.time_limit_seconds} onExpire={submitQuiz} />
       </div>
 
-      <QuestionCard
-        question={question}
-        options={question.options}
-        selectedIds={selectedIds}
-        onSelect={handleSelect}
-        questionIndex={currentIdx}
-        totalQuestions={quiz.questions.length}
-      />
+      {/* Progress bar */}
+      <div className="h-1 bg-border rounded-full mb-6 overflow-hidden">
+        <div
+          className="h-full bg-primary rounded-full transition-all duration-300"
+          style={{ width: `${((currentIdx + 1) / quiz.questions.length) * 100}%` }}
+        />
+      </div>
+
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div
+          key={currentIdx}
+          custom={direction}
+          initial={{ opacity: 0, x: 50 * direction }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 * direction }}
+          transition={{ duration: 0.2 }}
+        >
+          <QuestionCard
+            question={question}
+            options={question.options}
+            selectedIds={selectedIds}
+            onSelect={handleSelect}
+            questionIndex={currentIdx}
+            totalQuestions={quiz.questions.length}
+          />
+        </motion.div>
+      </AnimatePresence>
 
       <div className="flex justify-between mt-6">
-        <button
-          type="button"
-          onClick={() => setCurrentIdx((i) => i - 1)}
+        <Button
+          variant="outline"
+          onClick={() => goTo(currentIdx - 1)}
           disabled={currentIdx === 0}
-          className="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="gap-1.5"
         >
-          Previous
-        </button>
+          <ArrowLeft className="h-4 w-4" /> Previous
+        </Button>
 
-        {currentIdx < quiz.questions.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setCurrentIdx((i) => i + 1)}
-            className="px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-          >
-            Next
-          </button>
+        {!isLast ? (
+          <Button onClick={() => goTo(currentIdx + 1)} className="gap-1.5">
+            Next <ArrowRight className="h-4 w-4" />
+          </Button>
         ) : (
-          <button
-            type="button"
-            onClick={submitQuiz}
-            disabled={submitted}
-            className="px-6 py-2 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
-          >
+          <Button onClick={submitQuiz} disabled={submitted} className="gap-1.5 bg-success text-success-foreground hover:brightness-110">
+            <CheckCircle className="h-4 w-4" />
             {submitted ? "Submitting..." : "Submit Quiz"}
-          </button>
+          </Button>
         )}
       </div>
     </div>
