@@ -1,20 +1,18 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: quiz-postgres
     environment:
-      POSTGRES_USER: quizadmin
-      POSTGRES_PASSWORD: quizpass123
-      POSTGRES_DB: quizdb
+      POSTGRES_USER: ${POSTGRES_USER:-quizadmin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quizpass123}
+      POSTGRES_DB: ${POSTGRES_DB:-quizdb}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U quizadmin -d quizdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quizadmin} -d ${POSTGRES_DB:-quizdb}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -25,8 +23,8 @@ services:
       dockerfile: Dockerfile
     container_name: quiz-backend
     environment:
-      DATABASE_URL: postgres://quizadmin:quizpass123@postgres:5432/quizdb?sslmode=disable
-      JWT_SECRET: change-me-in-production
+      DATABASE_URL: ${DATABASE_URL:-postgres://quizadmin:quizpass123@postgres:5432/quizdb?sslmode=disable}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-12345}
       PORT: "8080"
     ports:
       - "8080:8080"
