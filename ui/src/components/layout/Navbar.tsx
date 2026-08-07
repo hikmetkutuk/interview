@@ -9,7 +9,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 font-semibold text-foreground hover:text-primary transition-colors">
           <Brain className="h-5 w-5 text-primary" />
-          <span className="text-base tracking-tight">QuizApp</span>
+          <span className="text-base tracking-tight">interview</span>
         </Link>
 
         <div className="flex items-center gap-1">

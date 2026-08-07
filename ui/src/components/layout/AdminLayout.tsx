@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FolderOpen, FileQuestion } from "lucide-react";
+import { LayoutDashboard, FolderOpen, FileQuestion, Home } from "lucide-react";
 
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -41,6 +41,16 @@ export default function AdminLayout() {
             );
           })}
         </nav>
+
+        <div className="mt-4 pt-4 border-t border-border">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
+        </div>
       </aside>
       <main className="flex-1 p-6 bg-background">
         <Outlet />
