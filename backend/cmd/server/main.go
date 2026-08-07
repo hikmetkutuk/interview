@@ -36,6 +36,7 @@ func main() {
 	quizRepo := repository.NewQuizRepo(db)
 	questionRepo := repository.NewQuestionRepo(db)
 	optionRepo := repository.NewOptionRepo(db)
+	codingRepo := repository.NewCodingRepo(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -46,6 +47,7 @@ func main() {
 	quizHandler := handler.NewQuizHandler(quizRepo)
 	questionHandler := handler.NewQuestionHandler(questionRepo, optionRepo)
 	publicHandler := handler.NewPublicHandler(categoryRepo, quizRepo, questionRepo, optionRepo)
+	codingHandler := handler.NewCodingHandler(codingRepo)
 
 	r := chi.NewRouter()
 
@@ -72,6 +74,9 @@ func main() {
 	r.Get("/api/quizzes", publicHandler.ListQuizzes)
 	r.Get("/api/quizzes/{id}", publicHandler.GetQuiz)
 	r.Post("/api/quizzes/{id}/submit", publicHandler.SubmitQuiz)
+	r.Get("/api/coding", codingHandler.ListByCategory)
+	r.Get("/api/coding/{id}", codingHandler.GetPublic)
+	r.Post("/api/coding/{id}/run", codingHandler.RunCode)
 
 	// Admin routes (protected)
 	r.Route("/api/admin", func(r chi.Router) {
@@ -101,6 +106,14 @@ func main() {
 		r.Route("/questions", func(r chi.Router) {
 			r.Put("/{id}", questionHandler.Update)
 			r.Delete("/{id}", questionHandler.Delete)
+		})
+
+		r.Route("/coding", func(r chi.Router) {
+			r.Get("/", codingHandler.List)
+			r.Get("/{id}", codingHandler.Get)
+			r.Post("/", codingHandler.Create)
+			r.Put("/{id}", codingHandler.Update)
+			r.Delete("/{id}", codingHandler.Delete)
 		})
 	})
 

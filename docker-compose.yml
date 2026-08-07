@@ -25,12 +25,40 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgres://quizadmin:quizpass123@postgres:5432/quizdb?sslmode=disable}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-12345}
+      RUNNER_URL: ${RUNNER_URL:-http://runner:8090/execute}
       PORT: "8080"
     ports:
       - "8081:8080"
     depends_on:
       postgres:
         condition: service_healthy
+      runner:
+        condition: service_started
+    networks:
+      - default
+      - runner_net
+
+  runner:
+    build:
+      context: ./runner
+      dockerfile: Dockerfile
+    container_name: quiz-runner
+    environment:
+      PORT: "8090"
+    expose:
+      - "8090"
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - runner_net
 
   frontend:
     build:
@@ -44,3 +72,7 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  runner_net:
+    internal: true

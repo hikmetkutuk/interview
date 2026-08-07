@@ -62,3 +62,40 @@ export interface QuizResult {
   passed: boolean;
   details: QuestionResult[];
 }
+
+export interface CodingProblem {
+  id: string;
+  title: string;
+  description: string;
+  category_id: string;
+  difficulty: "easy" | "medium" | "hard";
+  starter_code: string;
+  solution_code: string;
+  created_at: string;
+}
+
+export interface TestCase {
+  id: string;
+  coding_problem_id: string;
+  input: string;
+  expected_output: string;
+  is_hidden: boolean;
+  sort_order: number;
+}
+
+export interface CodingProblemWithTestCases extends CodingProblem {
+  test_cases: TestCase[];
+}
+
+export interface TestCaseResult {
+  input: string;
+  expected_output: string;
+  actual_output: string;
+  passed: boolean;
+  is_hidden: boolean;
+}
+
+export interface CodeSubmitResponse {
+  passed: boolean;
+  results: TestCaseResult[];
+}

@@ -92,3 +92,48 @@ type QuizResult struct {
 	Passed  bool             `json:"passed"`
 	Details []QuestionResult `json:"details"`
 }
+
+// Coding problem models
+
+type CodingProblem struct {
+	ID           string `db:"id" json:"id"`
+	Title        string `db:"title" json:"title"`
+	Description  string `db:"description" json:"description"`
+	CategoryID   string `db:"category_id" json:"category_id"`
+	Difficulty   string `db:"difficulty" json:"difficulty"`
+	StarterCode  string `db:"starter_code" json:"starter_code"`
+	SolutionCode string `db:"solution_code" json:"solution_code"`
+	CreatedAt    string `db:"created_at" json:"created_at"`
+}
+
+type TestCase struct {
+	ID               string `db:"id" json:"id"`
+	CodingProblemID  string `db:"coding_problem_id" json:"coding_problem_id"`
+	Input            string `db:"input" json:"input"`
+	ExpectedOutput   string `db:"expected_output" json:"expected_output"`
+	IsHidden         bool   `db:"is_hidden" json:"is_hidden"`
+	SortOrder        int    `db:"sort_order" json:"sort_order"`
+}
+
+type CodingProblemWithTestCases struct {
+	CodingProblem
+	TestCases []TestCase `json:"test_cases"`
+}
+
+type CodeSubmitRequest struct {
+	Code     string `json:"code"`
+	Language string `json:"language"`
+}
+
+type TestCaseResult struct {
+	Input          string `json:"input"`
+	ExpectedOutput string `json:"expected_output"`
+	ActualOutput   string `json:"actual_output"`
+	Passed         bool   `json:"passed"`
+	IsHidden       bool   `json:"is_hidden"`
+}
+
+type CodeSubmitResponse struct {
+	Passed  bool              `json:"passed"`
+	Results []TestCaseResult  `json:"results"`
+}

@@ -1,10 +1,11 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FolderOpen, FileQuestion, Home } from "lucide-react";
+import { LayoutDashboard, FolderOpen, FileQuestion, Code2, Home } from "lucide-react";
 
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/categories", label: "Categories", icon: FolderOpen },
   { to: "/admin/quizzes", label: "Quizzes", icon: FileQuestion },
+  { to: "/admin/coding", label: "Coding", icon: Code2 },
 ];
 
 export default function AdminLayout() {

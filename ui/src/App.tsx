@@ -10,6 +10,8 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminCategories from "./pages/admin/Categories";
 import AdminQuizzes from "./pages/admin/Quizzes";
 import AdminQuestionEditor from "./pages/admin/QuestionEditor";
+import CodingProblem from "./pages/CodingProblem";
+import AdminCoding from "./pages/admin/Coding";
 
 export default function App() {
   return (
@@ -19,6 +21,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/category/:id" element={<CategoryQuizzes />} />
           <Route path="/quiz/:id" element={<Quiz />} />
+          <Route path="/coding/:id" element={<CodingProblem />} />
           <Route path="/result" element={<Result />} />
         </Route>
 
@@ -28,6 +31,7 @@ export default function App() {
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/quizzes" element={<AdminQuizzes />} />
           <Route path="/admin/quizzes/:id/questions" element={<AdminQuestionEditor />} />
+          <Route path="/admin/coding" element={<AdminCoding />} />
         </Route>
       </Routes>
     </BrowserRouter>
