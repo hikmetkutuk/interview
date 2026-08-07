@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../../api/client";
 import type { QuestionWithOptions } from "../../types";
@@ -54,6 +54,7 @@ export default function AdminQuestionEditor() {
   ]);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const fetchQuestions = useCallback(() => {
     api
@@ -116,6 +117,7 @@ export default function AdminQuestionEditor() {
         : [newOption("", true, 0), newOption("", false, 1)]
     );
     setEditId(q.id);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
   const handleSave = async (e: SyntheticEvent<HTMLFormElement>) => {
@@ -149,35 +151,35 @@ export default function AdminQuestionEditor() {
     fetchQuestions();
   };
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading) return <p className="text-muted-foreground">Loading...</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link to="/admin/quizzes" className="text-indigo-600 text-sm hover:underline">
+          <Link to="/admin/quizzes" className="text-primary text-sm hover:underline">
             &larr; Back to Quizzes
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">Questions</h1>
+          <h1 className="text-2xl font-bold text-foreground mt-1">Questions</h1>
         </div>
       </div>
 
       {/* Existing questions */}
       {questions.length === 0 ? (
-        <p className="text-gray-500 mb-6">No questions yet.</p>
+        <p className="text-muted-foreground mb-6">No questions yet.</p>
       ) : (
         <div className="space-y-3 mb-8">
           {questions.map((q, i) => (
-            <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div key={q.id} className="bg-card border border-border rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded mr-2">
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded mr-2">
                     {q.type.toUpperCase()}
                   </span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-foreground">
                     {i + 1}. {q.text}
                   </span>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {q.options.map((o) => (
                       <span key={o.id} className={o.is_correct ? "text-green-600 mr-2" : "mr-2"}>
                         {o.is_correct ? "✓" : "○"} {o.text}
@@ -189,7 +191,7 @@ export default function AdminQuestionEditor() {
                   <button
                     type="button"
                     onClick={() => handleEdit(q)}
-                    className="text-xs text-indigo-600 hover:underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     Edit
                   </button>
@@ -208,17 +210,17 @@ export default function AdminQuestionEditor() {
       )}
 
       {/* Add/edit form */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 className="text-lg font-bold mb-4">{editId ? "Edit Question" : "Add Question"}</h2>
+      <div ref={formRef} className="bg-card border border-border rounded-lg p-6">
+        <h2 className="text-lg font-bold text-foreground mb-4">{editId ? "Edit Question" : "Add Question"}</h2>
         <form onSubmit={handleSave} className="flex flex-col gap-4">
           <div className="flex gap-4">
             <div>
-              <label htmlFor="q-type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <label htmlFor="q-type" className="block text-sm font-medium text-foreground mb-1">Type</label>
               <select
                 id="q-type"
                 value={form.type}
                 onChange={(e) => handleTypeChange(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="mcq">MCQ (Single)</option>
                 <option value="maq">MAQ (Multiple)</option>
@@ -226,24 +228,24 @@ export default function AdminQuestionEditor() {
               </select>
             </div>
             <div>
-              <label htmlFor="q-score" className="block text-sm font-medium text-gray-700 mb-1">Score</label>
+              <label htmlFor="q-score" className="block text-sm font-medium text-foreground mb-1">Score</label>
               <input
                 id="q-score"
                 type="number"
                 value={form.score}
                 onChange={(e) => setForm({ ...form, score: Number(e.target.value) })}
-                className="w-20 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-20 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="q-text" className="block text-sm font-medium text-gray-700 mb-1">Question Text</label>
+            <label htmlFor="q-text" className="block text-sm font-medium text-foreground mb-1">Question Text</label>
             <textarea
               id="q-text"
               value={form.text}
               onChange={(e) => setForm({ ...form, text: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               rows={2}
               required
             />
@@ -251,23 +253,23 @@ export default function AdminQuestionEditor() {
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label htmlFor="q-image" className="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
+              <label htmlFor="q-image" className="block text-sm font-medium text-foreground mb-1">Image URL (optional)</label>
               <input
                 id="q-image"
                 type="text"
                 value={form.image_url}
                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="flex-1">
-              <label htmlFor="q-code" className="block text-sm font-medium text-gray-700 mb-1">Code Snippet (optional)</label>
+              <label htmlFor="q-code" className="block text-sm font-medium text-foreground mb-1">Code Snippet (optional)</label>
               <input
                 id="q-code"
                 type="text"
                 value={form.code_snippet}
                 onChange={(e) => setForm({ ...form, code_snippet: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -275,14 +277,14 @@ export default function AdminQuestionEditor() {
           {/* Options */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Options{" "}
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   {form.type === "maq" ? "(check correct)" : "(select one correct)"}
                 </span>
               </label>
               {form.type !== "truefalse" && (
-                <button type="button" onClick={addOption} className="text-xs text-indigo-600 hover:underline">
+                <button type="button" onClick={addOption} className="text-xs text-primary hover:underline">
                   + Add Option
                 </button>
               )}
@@ -295,7 +297,7 @@ export default function AdminQuestionEditor() {
                     name="correct-option"
                     checked={opt.is_correct}
                     onChange={() => handleCorrectToggle(i)}
-                    className="accent-indigo-600"
+                    className="accent-primary"
                   />
                   <input
                     type="text"
@@ -306,7 +308,7 @@ export default function AdminQuestionEditor() {
                       setOptions(next);
                     }}
                     placeholder={`Option ${i + 1}`}
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   />
                   {options.length > 2 && (
@@ -328,7 +330,7 @@ export default function AdminQuestionEditor() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-md"
               >
                 Cancel Edit
               </button>
@@ -336,7 +338,7 @@ export default function AdminQuestionEditor() {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60"
+              className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-md hover:bg-indigo-700 disabled:opacity-60"
             >
               {submitButtonLabel(saving, !!editId)}
             </button>
