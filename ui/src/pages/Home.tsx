@@ -5,7 +5,6 @@ import { ArrowRight, Code2, Globe, Database, Cpu, type LucideIcon } from "lucide
 import api from "../api/client";
 import { Card, CardContent } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
 import type { Category } from "../types";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -120,21 +119,6 @@ export default function Home() {
           <br />
           <span className="text-primary">one quiz away.</span>
         </h1>
-        <div className="flex items-center justify-center gap-3">
-          {categories.length > 0 && (
-            <Link to={`/category/${categories[0].id}`}>
-              <Button size="lg" className="gap-2">
-                Start a Quiz
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
-          <Link to="/admin">
-            <Button variant="outline" size="lg">
-              Create Quiz
-            </Button>
-          </Link>
-        </div>
       </motion.section>
 
       {/* Categories */}

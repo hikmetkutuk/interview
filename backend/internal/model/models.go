@@ -101,6 +101,7 @@ type CodingProblem struct {
 	Description  string `db:"description" json:"description"`
 	CategoryID   string `db:"category_id" json:"category_id"`
 	Difficulty   string `db:"difficulty" json:"difficulty"`
+	Language     string `db:"language" json:"language"`
 	StarterCode  string `db:"starter_code" json:"starter_code"`
 	SolutionCode string `db:"solution_code" json:"solution_code"`
 	CreatedAt    string `db:"created_at" json:"created_at"`

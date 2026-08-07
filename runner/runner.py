@@ -47,6 +47,11 @@ def command_for(language, code, workdir):
         return ["python3", "-I", "-S", "-c", code]
     if language in ("javascript", "typescript"):
         return ["node", "--no-warnings", "-e", code]
+    if language == "java":
+        source = os.path.join(workdir, "Main.java")
+        with open(source, "w", encoding="utf-8") as file:
+            file.write(code)
+        return ["sh", "-c", f"javac {source} && java -cp {workdir} Main"]
     if language == "go":
         source = os.path.join(workdir, "main.go")
         with open(source, "w", encoding="utf-8") as file:

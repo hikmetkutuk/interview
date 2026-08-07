@@ -20,7 +20,6 @@ export default function CodingProblemPage() {
   const [problem, setProblem] = useState<CodingProblem | null>(null);
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
-  const [language, setLanguage] = useState("javascript");
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState<(TestCaseResult & { _key: string })[] | null>(null);
   const keyCounter = useRef(0);
@@ -34,6 +33,8 @@ export default function CodingProblemPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
+
+  const language = problem?.language || "javascript";
 
   const handleRun = async () => {
     setRunning(true);
@@ -69,6 +70,7 @@ export default function CodingProblemPage() {
           <Badge variant={difficultyColors[problem.difficulty] || "default"}>
             {problem.difficulty}
           </Badge>
+          <span className="text-xs text-muted-foreground capitalize">{language}</span>
         </div>
 
         <Card className="mb-6">
@@ -80,19 +82,10 @@ export default function CodingProblemPage() {
         </Card>
       </motion.div>
 
-      {/* Language selector + editor */}
       <div className="mb-4 flex items-center justify-between">
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="go">Go</option>
-          <option value="typescript">TypeScript</option>
-        </select>
-
+        <span className="text-sm text-muted-foreground">
+          Language: <span className="text-foreground font-medium capitalize">{language}</span>
+        </span>
         <Button onClick={handleRun} disabled={running} className="gap-1.5">
           <Play className="h-4 w-4" />
           {running ? "Running..." : "Run Code"}
@@ -116,7 +109,6 @@ export default function CodingProblemPage() {
         />
       </Card>
 
-      {/* Results */}
       {results && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className={`border-2 ${passedCount === totalCount ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"}`}>

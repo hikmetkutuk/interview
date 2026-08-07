@@ -52,12 +52,13 @@ func (h *CodingHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *CodingHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Title        string          `json:"title"`
-		Description  string          `json:"description"`
-		CategoryID   string          `json:"category_id"`
-		Difficulty   string          `json:"difficulty"`
-		StarterCode  string          `json:"starter_code"`
-		SolutionCode string          `json:"solution_code"`
+		Title        string           `json:"title"`
+		Description  string           `json:"description"`
+		CategoryID   string           `json:"category_id"`
+		Difficulty   string           `json:"difficulty"`
+		Language     string           `json:"language"`
+		StarterCode  string           `json:"starter_code"`
+		SolutionCode string           `json:"solution_code"`
 		TestCases    []model.TestCase `json:"test_cases"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -74,11 +75,15 @@ func (h *CodingHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Description:  req.Description,
 		CategoryID:   req.CategoryID,
 		Difficulty:   req.Difficulty,
+		Language:     req.Language,
 		StarterCode:  req.StarterCode,
 		SolutionCode: req.SolutionCode,
 	}
 	if p.Difficulty == "" {
 		p.Difficulty = "easy"
+	}
+	if p.Language == "" {
+		p.Language = "javascript"
 	}
 	if err := h.repo.Create(r.Context(), p); err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create problem"})
@@ -104,7 +109,8 @@ func (h *CodingHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Title        string          `json:"title"`
 		Description  string          `json:"description"`
 		CategoryID   string          `json:"category_id"`
-		Difficulty   string          `json:"difficulty"`
+		Difficulty   string           `json:"difficulty"`
+			Language     string           `json:"language"`
 		StarterCode  string          `json:"starter_code"`
 		SolutionCode string          `json:"solution_code"`
 		TestCases    []model.TestCase `json:"test_cases"`
@@ -120,6 +126,7 @@ func (h *CodingHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Description:  req.Description,
 		CategoryID:   req.CategoryID,
 		Difficulty:   req.Difficulty,
+			Language:     req.Language,
 		StarterCode:  req.StarterCode,
 		SolutionCode: req.SolutionCode,
 	}

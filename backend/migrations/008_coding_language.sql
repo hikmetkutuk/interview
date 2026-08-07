@@ -1,0 +1,1 @@
+ALTER TABLE coding_problems ADD COLUMN IF NOT EXISTS language VARCHAR(20) NOT NULL DEFAULT 'javascript';

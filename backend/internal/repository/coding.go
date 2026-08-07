@@ -20,19 +20,19 @@ func NewCodingRepo(db *sqlx.DB) *CodingRepo {
 
 func (r *CodingRepo) FindAll(ctx context.Context) ([]model.CodingProblem, error) {
 	var problems []model.CodingProblem
-	err := r.db.SelectContext(ctx, &problems, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, starter_code, solution_code, created_at FROM coding_problems ORDER BY created_at DESC`)
+	err := r.db.SelectContext(ctx, &problems, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, language, starter_code, solution_code, created_at FROM coding_problems ORDER BY created_at DESC`)
 	return problems, err
 }
 
 func (r *CodingRepo) FindByCategory(ctx context.Context, categoryID string) ([]model.CodingProblem, error) {
 	var problems []model.CodingProblem
-	err := r.db.SelectContext(ctx, &problems, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, starter_code, solution_code, created_at FROM coding_problems WHERE category_id=$1 ORDER BY created_at DESC`, categoryID)
+	err := r.db.SelectContext(ctx, &problems, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, language, starter_code, solution_code, created_at FROM coding_problems WHERE category_id=$1 ORDER BY created_at DESC`, categoryID)
 	return problems, err
 }
 
 func (r *CodingRepo) FindByID(ctx context.Context, id string) (*model.CodingProblem, error) {
 	var p model.CodingProblem
-	err := r.db.GetContext(ctx, &p, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, starter_code, solution_code, created_at FROM coding_problems WHERE id=$1`, id)
+	err := r.db.GetContext(ctx, &p, `SELECT id, title, description, COALESCE(category_id::text, '') AS category_id, difficulty, language, starter_code, solution_code, created_at FROM coding_problems WHERE id=$1`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +40,9 @@ func (r *CodingRepo) FindByID(ctx context.Context, id string) (*model.CodingProb
 }
 
 func (r *CodingRepo) Create(ctx context.Context, p *model.CodingProblem) error {
-	columns := []string{"title", "description", "difficulty", "starter_code", "solution_code"}
-	placeholders := []string{"$1", "$2", "$3", "$4", "$5"}
-	args := []any{p.Title, p.Description, p.Difficulty, p.StarterCode, p.SolutionCode}
+	columns := []string{"title", "description", "difficulty", "language", "starter_code", "solution_code"}
+	placeholders := []string{"$1", "$2", "$3", "$4", "$5", "$6"}
+	args := []any{p.Title, p.Description, p.Difficulty, p.Language, p.StarterCode, p.SolutionCode}
 
 	addColumn := func(column string, value any) {
 		args = append(args, value)
@@ -63,8 +63,8 @@ func (r *CodingRepo) Create(ctx context.Context, p *model.CodingProblem) error {
 }
 
 func (r *CodingRepo) Update(ctx context.Context, p *model.CodingProblem) error {
-	assignments := []string{"title=$1", "description=$2", "difficulty=$3", "starter_code=$4", "solution_code=$5"}
-	args := []any{p.Title, p.Description, p.Difficulty, p.StarterCode, p.SolutionCode}
+	assignments := []string{"title=$1", "description=$2", "difficulty=$3", "language=$4", "starter_code=$5", "solution_code=$6"}
+	args := []any{p.Title, p.Description, p.Difficulty, p.Language, p.StarterCode, p.SolutionCode}
 
 	addAssignment := func(column string, value any) {
 		args = append(args, value)

@@ -42,7 +42,7 @@ export default function AdminCoding() {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<CodingProblem | null>(null);
   const [form, setForm] = useState({
-    title: "", description: "", category_id: "", difficulty: "easy",
+    title: "", description: "", category_id: "", difficulty: "easy", language: "javascript",
     starter_code: "", solution_code: "",
   });
   const [testCases, setTestCases] = useState<TCForm[]>([newTC()]);
@@ -61,7 +61,7 @@ export default function AdminCoding() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ title: "", description: "", category_id: "", difficulty: "easy", starter_code: "", solution_code: "" });
+    setForm({ title: "", description: "", category_id: "", difficulty: "easy", language: "javascript", starter_code: "", solution_code: "" });
     setTestCases([newTC()]);
     setEditing(null);
     setModal(false);
@@ -70,7 +70,7 @@ export default function AdminCoding() {
   const openEdit = async (p: CodingProblem) => {
     setForm({
       title: p.title, description: p.description, category_id: p.category_id,
-      difficulty: p.difficulty, starter_code: p.starter_code, solution_code: (p as any).solution_code || "",
+      difficulty: p.difficulty, language: p.language || "javascript", starter_code: p.starter_code, solution_code: (p as any).solution_code || "",
     });
     try {
       const res = await api.get<any>(`/admin/coding/${p.id}`);
@@ -175,6 +175,15 @@ export default function AdminCoding() {
                         <option value="hard">Hard</option>
                       </select>
                     </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="cp-lang" className="text-sm font-medium">Language</label>
+                      <select id="cp-lang" value={form.language || "javascript"} onChange={(e) => setForm({ ...form, language: e.target.value })} className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="go">Go</option>
+                        <option value="typescript">TypeScript</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -186,13 +195,13 @@ export default function AdminCoding() {
                     <div className="space-y-1.5">
                       <label htmlFor="starter-editor" className="text-sm font-medium">Starter Code</label>
                       <div id="starter-editor" className="border border-input rounded-lg overflow-hidden">
-                        <Editor height="180px" language="javascript" value={form.starter_code} onChange={(v) => setForm({ ...form, starter_code: v || "" })} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 13 }} />
+                        <Editor height="180px" language={form.language || "javascript"} value={form.starter_code} onChange={(v) => setForm({ ...form, starter_code: v || "" })} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 13 }} />
                       </div>
                     </div>
                     <div className="space-y-1.5">
                       <label htmlFor="solution-editor" className="text-sm font-medium">Solution Code</label>
                       <div id="solution-editor" className="border border-input rounded-lg overflow-hidden">
-                        <Editor height="180px" language="javascript" value={form.solution_code} onChange={(v) => setForm({ ...form, solution_code: v || "" })} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 13 }} />
+                        <Editor height="180px" language={form.language || "javascript"} value={form.solution_code} onChange={(v) => setForm({ ...form, solution_code: v || "" })} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 13 }} />
                       </div>
                     </div>
                   </div>

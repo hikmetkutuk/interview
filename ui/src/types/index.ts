@@ -69,6 +69,7 @@ export interface CodingProblem {
   description: string;
   category_id: string;
   difficulty: "easy" | "medium" | "hard";
+  language: string;
   starter_code: string;
   solution_code: string;
   created_at: string;
