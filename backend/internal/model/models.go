@@ -36,6 +36,7 @@ type Question struct {
 	Text        string `db:"text" json:"text"`
 	ImageURL    string `db:"image_url" json:"image_url"`
 	CodeSnippet string `db:"code_snippet" json:"code_snippet"`
+	Explanation string `db:"explanation" json:"explanation"`
 	Score       int    `db:"score" json:"score"`
 	SortOrder   int    `db:"sort_order" json:"sort_order"`
 }
@@ -45,6 +46,7 @@ type Option struct {
 	QuestionID string `db:"question_id" json:"question_id"`
 	Text       string `db:"text" json:"text"`
 	IsCorrect  bool   `db:"is_correct" json:"is_correct"`
+	MatchText  string `db:"match_text" json:"match_text"`
 	SortOrder  int    `db:"sort_order" json:"sort_order"`
 }
 
@@ -70,8 +72,9 @@ type QuizWithQuestions struct {
 }
 
 type Answer struct {
-	QuestionID        string   `json:"question_id"`
-	SelectedOptionIDs []string `json:"selected_option_ids"`
+	QuestionID        string     `json:"question_id"`
+	SelectedOptionIDs []string   `json:"selected_option_ids"`
+	MatchingPairs     [][]string `json:"matching_pairs"`
 }
 
 type SubmitRequest struct {
@@ -108,12 +111,12 @@ type CodingProblem struct {
 }
 
 type TestCase struct {
-	ID               string `db:"id" json:"id"`
-	CodingProblemID  string `db:"coding_problem_id" json:"coding_problem_id"`
-	Input            string `db:"input" json:"input"`
-	ExpectedOutput   string `db:"expected_output" json:"expected_output"`
-	IsHidden         bool   `db:"is_hidden" json:"is_hidden"`
-	SortOrder        int    `db:"sort_order" json:"sort_order"`
+	ID              string `db:"id" json:"id"`
+	CodingProblemID string `db:"coding_problem_id" json:"coding_problem_id"`
+	Input           string `db:"input" json:"input"`
+	ExpectedOutput  string `db:"expected_output" json:"expected_output"`
+	IsHidden        bool   `db:"is_hidden" json:"is_hidden"`
+	SortOrder       int    `db:"sort_order" json:"sort_order"`
 }
 
 type CodingProblemWithTestCases struct {
@@ -135,6 +138,6 @@ type TestCaseResult struct {
 }
 
 type CodeSubmitResponse struct {
-	Passed  bool              `json:"passed"`
-	Results []TestCaseResult  `json:"results"`
+	Passed  bool             `json:"passed"`
+	Results []TestCaseResult `json:"results"`
 }

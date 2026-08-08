@@ -2,20 +2,27 @@ import { Code2 } from "lucide-react";
 import type { Question, Option } from "../types";
 import { Badge } from "./ui/Badge";
 import { Card } from "./ui/Card";
+import MatchingQuestion from "./MatchingQuestion";
 
 interface Props {
   readonly question: Question;
   readonly options: Option[];
   readonly selectedIds: string[];
   readonly onSelect: (optionId: string) => void;
+  readonly matchingPairs?: Record<string, string>;
+  readonly onMatchingPairs?: (pairs: [string, string][]) => void;
   readonly questionIndex: number;
   readonly totalQuestions: number;
 }
 
 export default function QuestionCard({
-  question, options, selectedIds, onSelect, questionIndex, totalQuestions,
+  question, options, selectedIds, onSelect, matchingPairs, onMatchingPairs, questionIndex, totalQuestions,
 }: Props) {
   const isMulti = question.type === "maq";
+
+  if (question.type === "matching" && onMatchingPairs) {
+    return <MatchingQuestion options={options || []} initialPairs={matchingPairs} onPairsChange={onMatchingPairs} questionIndex={questionIndex} totalQuestions={totalQuestions} />;
+  }
 
   return (
     <Card className="p-6">
@@ -24,7 +31,7 @@ export default function QuestionCard({
           Question {questionIndex + 1} of {totalQuestions}
         </Badge>
         <span className="text-xs text-muted-foreground font-mono">
-          {question.type.toUpperCase()} &middot; {question.score} pt
+          {question.type.toUpperCase()}
         </span>
       </div>
 
@@ -47,7 +54,7 @@ export default function QuestionCard({
       )}
 
       <div className="flex flex-col gap-2 mt-4">
-        {options.map((opt) => {
+        {(options || []).map((opt) => {
           const checked = selectedIds.includes(opt.id);
           return (
             <label

@@ -86,7 +86,7 @@ export default function AdminCoding() {
   const handleSave = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-    const payload = { ...form, test_cases: testCases.filter((tc) => tc.expected_output !== "") };
+    const payload = { ...form, test_cases: (testCases || []).filter((tc) => tc.expected_output !== "") };
     try {
       if (editing) {
         await api.put(`/admin/coding/${editing.id}`, payload);
@@ -229,7 +229,7 @@ export default function AdminCoding() {
                             <input type="checkbox" checked={tc.is_hidden} onChange={(e) => { const n = [...testCases]; n[i] = { ...n[i], is_hidden: e.target.checked }; setTestCases(n); }} className="accent-primary" /> Hidden
                           </label>
                           {testCases.length > 1 && (
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setTestCases(testCases.filter((_, j) => j !== i))} className="text-destructive">✕</Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => setTestCases((testCases || []).filter((_, j) => j !== i))} className="text-destructive">✕</Button>
                           )}
                         </div>
                       </div>

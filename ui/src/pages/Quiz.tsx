@@ -6,7 +6,14 @@ import api from "../api/client";
 import Timer from "../components/Timer";
 import QuestionCard from "../components/QuestionCard";
 import { Button } from "../components/ui/Button";
+import { shuffle } from "../lib/shuffle";
 import type { QuizWithQuestions, QuizResult } from "../types";
+
+function toRecord(pairs: [string, string][]): Record<string, string> {
+  const r: Record<string, string> = {};
+  for (const [k, v] of pairs) r[k] = v;
+  return r;
+}
 
 export default function Quiz() {
   const { id } = useParams<{ id: string }>();
@@ -16,12 +23,22 @@ export default function Quiz() {
   const [loading, setLoading] = useState(true);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [matchingPairs, setMatchingPairs] = useState<Record<string, [string, string][]>>(() => {
+    try { return JSON.parse(localStorage.getItem("quiz-matching") || "{}"); } catch { return {}; }
+  });
   const [submitted, setSubmitted] = useState(false);
   const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     api.get<QuizWithQuestions>(`/quizzes/${id}`)
-      .then((res) => setQuiz(res.data))
+      .then((res) => {
+        const q = res.data;
+        q.questions = shuffle(q.questions).map((question) => ({
+          ...question,
+          options: shuffle(question.options || []),
+        }));
+        setQuiz(q);
+      })
       .catch(() => navigate("/"))
       .finally(() => setLoading(false));
   }, [id, navigate]);
@@ -30,15 +47,15 @@ export default function Quiz() {
     if (submitted || !quiz) return;
     setSubmitted(true);
     const payload = {
-      answers: Object.entries(answers).map(([qid, oids]) => ({
-        question_id: qid,
-        selected_option_ids: oids,
-      })),
+      answers: [
+        ...Object.entries(answers).map(([qid, oids]) => ({ question_id: qid, selected_option_ids: oids })),
+        ...Object.entries(matchingPairs).map(([qid, pairs]) => ({ question_id: qid, selected_option_ids: [], matching_pairs: pairs })),
+      ],
     };
     api.post<QuizResult>(`/quizzes/${id}/submit`, payload)
-      .then((res) => navigate("/result", { state: res.data }))
+      .then((res) => { localStorage.removeItem("quiz-matching"); navigate("/result", { state: { ...res.data, order: quiz.questions.map((q) => q.id) } }); })
       .catch(() => setSubmitted(false));
-  }, [answers, id, navigate, quiz, submitted]);
+  }, [answers, matchingPairs, id, navigate, quiz, submitted]);
 
   const handleSelect = (optionId: string) => {
     if (!quiz) return;
@@ -85,6 +102,7 @@ export default function Quiz() {
   }
 
   const question = quiz.questions[currentIdx];
+  if (!question) return <div className="text-muted-foreground">Question not found.</div>;
   const selectedIds = answers[question.id] || [];
   const isLast = currentIdx === quiz.questions.length - 1;
 
@@ -122,6 +140,14 @@ export default function Quiz() {
             options={question.options}
             selectedIds={selectedIds}
             onSelect={handleSelect}
+            matchingPairs={toRecord(matchingPairs[question.id] || [])}
+            onMatchingPairs={(pairs) => {
+              setMatchingPairs((prev) => {
+                const next = { ...prev, [question.id]: pairs };
+                localStorage.setItem("quiz-matching", JSON.stringify(next));
+                return next;
+              });
+            }}
             questionIndex={currentIdx}
             totalQuestions={quiz.questions.length}
           />

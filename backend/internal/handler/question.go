@@ -13,6 +13,8 @@ import (
 	"quiz-backend/internal/repository"
 )
 
+const errUpdateQuestion = "failed to update question"
+
 type QuestionHandler struct {
 	questionRepo *repository.QuestionRepo
 	optionRepo   *repository.OptionRepo
@@ -58,6 +60,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Text        string         `json:"text"`
 		ImageURL    string         `json:"image_url"`
 		CodeSnippet string         `json:"code_snippet"`
+		Explanation string         `json:"explanation"`
 		Score       int            `json:"score"`
 		SortOrder   int            `json:"sort_order"`
 		Options     []model.Option `json:"options"`
@@ -77,6 +80,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Text:        req.Text,
 		ImageURL:    req.ImageURL,
 		CodeSnippet: req.CodeSnippet,
+		Explanation: req.Explanation,
 		Score:       defaultQuestionScore(req.Score),
 		SortOrder:   req.SortOrder,
 	}
@@ -105,6 +109,7 @@ func (h *QuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Text        string         `json:"text"`
 		ImageURL    string         `json:"image_url"`
 		CodeSnippet string         `json:"code_snippet"`
+		Explanation string         `json:"explanation"`
 		Score       int            `json:"score"`
 		SortOrder   int            `json:"sort_order"`
 		Options     []model.Option `json:"options"`
@@ -120,19 +125,20 @@ func (h *QuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Text:        req.Text,
 		ImageURL:    req.ImageURL,
 		CodeSnippet: req.CodeSnippet,
+		Explanation: req.Explanation,
 		Score:       defaultQuestionScore(req.Score),
 		SortOrder:   req.SortOrder,
 	}
 
 	tx, err := h.questionRepo.BeginTx(r.Context())
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update question"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": errUpdateQuestion})
 		return
 	}
 
 	if err := h.questionRepo.UpdateTx(r.Context(), tx, q); err != nil {
 		rollbackTx(tx)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update question"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": errUpdateQuestion})
 		return
 	}
 
@@ -152,7 +158,7 @@ func (h *QuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tx.Commit(); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update question"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": errUpdateQuestion})
 		return
 	}
 

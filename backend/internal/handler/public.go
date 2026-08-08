@@ -2,8 +2,11 @@ package handler
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"log"
+	"math/big"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -81,6 +84,7 @@ func (h *PublicHandler) GetQuiz(w http.ResponseWriter, r *http.Request) {
 
 	questions, err := h.questionRepo.FindByQuizID(r.Context(), id)
 	if err != nil {
+		log.Printf("FindByQuizID error: %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to fetch questions"})
 		return
 	}
@@ -98,22 +102,84 @@ func (h *PublicHandler) GetQuiz(w http.ResponseWriter, r *http.Request) {
 		if options == nil {
 			options = []model.Option{}
 		}
-		// Strip correct answer info for public API
-		publicOptions := make([]model.Option, len(options))
-		for i, o := range options {
-			publicOptions[i] = model.Option{
-				ID:         o.ID,
-				QuestionID: o.QuestionID,
-				Text:       o.Text,
-				IsCorrect:  false,
-				SortOrder:  o.SortOrder,
-			}
-		}
+		publicOptions := publicOptionsForQuestion(q, options)
 		result = append(result, model.QuestionWithOptions{Question: q, Options: publicOptions})
 	}
 
 	quizWithQ := model.QuizWithQuestions{Quiz: *quiz, Questions: result}
 	writeJSON(w, http.StatusOK, quizWithQ)
+}
+
+func publicOptionsForQuestion(q model.Question, options []model.Option) []model.Option {
+	if q.Type == "matching" {
+		return publicMatchingOptions(options)
+	}
+
+	publicOptions := make([]model.Option, len(options))
+	for i, o := range options {
+		publicOptions[i] = model.Option{
+			ID:         o.ID,
+			QuestionID: o.QuestionID,
+			Text:       o.Text,
+			IsCorrect:  false,
+			SortOrder:  o.SortOrder,
+		}
+	}
+	return publicOptions
+}
+
+func publicMatchingOptions(options []model.Option) []model.Option {
+	matchValues := shuffledMatchValues(options)
+	publicOptions := make([]model.Option, len(options))
+	matchIndex := 0
+
+	for i, o := range options {
+		publicOptions[i] = model.Option{
+			ID:         o.ID,
+			QuestionID: o.QuestionID,
+			Text:       o.Text,
+			IsCorrect:  false,
+			SortOrder:  o.SortOrder,
+		}
+		if o.MatchText != "" && len(matchValues) > 0 {
+			publicOptions[i].MatchText = matchValues[matchIndex%len(matchValues)]
+			matchIndex++
+		}
+	}
+
+	return publicOptions
+}
+
+func shuffledMatchValues(options []model.Option) []string {
+	seen := make(map[string]bool)
+	values := make([]string, 0)
+	for _, o := range options {
+		if o.MatchText == "" || seen[o.MatchText] {
+			continue
+		}
+		seen[o.MatchText] = true
+		values = append(values, o.MatchText)
+	}
+
+	if len(values) <= 1 {
+		return values
+	}
+
+	for i := len(values) - 1; i > 0; i-- {
+		j, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			return append(values[1:], values[0])
+		}
+		values[i], values[j.Int64()] = values[j.Int64()], values[i]
+	}
+	return values
+}
+
+func shortID(id string) string {
+	if len(id) <= 8 {
+		return id
+	}
+	return id[:8]
 }
 
 // POST /api/quizzes/:id/submit
@@ -122,9 +188,11 @@ func (h *PublicHandler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 
 	var req model.SubmitRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("SubmitQuiz decode error: %v", err)
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 		return
 	}
+	logSubmitAnswers(req)
 
 	quiz, err := h.quizRepo.FindByID(r.Context(), quizID)
 	if err != nil {
@@ -146,6 +214,11 @@ func (h *PublicHandler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s, ms, mds := h.gradeMatchingQuestions(r.Context(), questions, req.Answers)
+	totalScore += s
+	maxScore += ms
+	details = append(details, mds...)
+
 	result := model.QuizResult{
 		Score:   totalScore,
 		Total:   maxScore,
@@ -154,6 +227,64 @@ func (h *PublicHandler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, result)
+}
+
+func logSubmitAnswers(req model.SubmitRequest) {
+	log.Printf("SubmitQuiz received %d answers", len(req.Answers))
+	for i, a := range req.Answers {
+		log.Printf("  answer[%d]: qid=%s oids=%v matching=%v", i, shortID(a.QuestionID), a.SelectedOptionIDs, a.MatchingPairs)
+	}
+}
+
+func (h *PublicHandler) gradeMatchingQuestions(ctx context.Context, questions []model.Question, answers []model.Answer) (int, int, []model.QuestionResult) {
+	matchingPairs := buildMatchingMap(answers)
+	totalScore, maxScore := 0, 0
+	var details []model.QuestionResult
+
+	for _, q := range questions {
+		if q.Type != "matching" {
+			continue
+		}
+		options, _ := h.optionRepo.FindByQuestionID(ctx, q.ID)
+		if options == nil {
+			options = []model.Option{}
+		}
+		score := gradeMatching(options, matchingPairs[q.ID], q.Score)
+		correctOnly := extractMatchingCorrect(options)
+		userOnly := extractMatchingUser(options, matchingPairs[q.ID])
+		details = append(details, model.QuestionResult{
+			Question: q, UserAnswers: userOnly, CorrectAnswers: correctOnly,
+			IsCorrect: score == q.Score, Score: score,
+		})
+		totalScore += score
+		maxScore += q.Score
+	}
+	return totalScore, maxScore, details
+}
+
+func extractMatchingCorrect(options []model.Option) []model.Option {
+	result := make([]model.Option, 0)
+	for _, o := range options {
+		if o.MatchText != "" {
+			result = append(result, o)
+		}
+	}
+	return result
+}
+
+func extractMatchingUser(options []model.Option, pairs [][]string) []model.Option {
+	result := make([]model.Option, 0)
+	for _, pair := range pairs {
+		for _, o := range options {
+			if o.ID == pair[0] {
+				c := o
+				c.MatchText = pair[1]
+				result = append(result, c)
+				break
+			}
+		}
+	}
+	return result
 }
 
 func buildUserAnswerMap(answers []model.Answer) map[string]map[string]bool {
@@ -174,6 +305,9 @@ func (h *PublicHandler) gradeQuestions(ctx context.Context, questions []model.Qu
 	maxScore := 0
 
 	for _, q := range questions {
+		if q.Type == "matching" {
+			continue
+		}
 		options, err := h.optionRepo.FindByQuestionID(ctx, q.ID)
 		if err != nil {
 			return 0, 0, nil, fmt.Errorf("find options for question %s: %w", q.ID, err)
@@ -186,10 +320,7 @@ func (h *PublicHandler) gradeQuestions(ctx context.Context, questions []model.Qu
 		userOpts := filterSelectedOptions(options, userAnswers[q.ID])
 		isCorrect := checkAnswer(options, correctOpts, userAnswers[q.ID])
 
-		score := 0
-		if isCorrect {
-			score = q.Score
-		}
+		score := calcScore(q.Type, options, correctOpts, userAnswers[q.ID], q.Score)
 
 		details = append(details, model.QuestionResult{
 			Question:       q,
@@ -224,7 +355,7 @@ func filterCorrectOptions(options []model.Option) []model.Option {
 }
 
 func filterSelectedOptions(options []model.Option, selected map[string]bool) []model.Option {
-	var result []model.Option
+	result := make([]model.Option, 0)
 	for _, o := range options {
 		if selected != nil && selected[o.ID] {
 			result = append(result, o)
@@ -253,6 +384,84 @@ func checkAnswer(options []model.Option, correctOpts []model.Option, selected ma
 	}
 
 	return true
+}
+
+func calcScore(qType string, options []model.Option, correctOpts []model.Option, selected map[string]bool, maxScore int) int {
+	if qType == "maq" {
+		return calcMAQScore(options, correctOpts, selected, maxScore)
+	}
+	if checkAnswer(options, correctOpts, selected) {
+		return maxScore
+	}
+	return 0
+}
+
+func calcMAQScore(options []model.Option, correctOpts []model.Option, selected map[string]bool, maxScore int) int {
+	if len(correctOpts) == 0 {
+		return 0
+	}
+	correctSelected := 0
+	wrongSelected := 0
+	for _, o := range options {
+		if selected == nil || !selected[o.ID] {
+			continue
+		}
+		if o.IsCorrect {
+			correctSelected++
+		} else {
+			wrongSelected++
+		}
+	}
+	raw := correctSelected - wrongSelected
+	if raw < 0 {
+		raw = 0
+	}
+	score := (raw * maxScore) / len(correctOpts)
+	if score > maxScore {
+		score = maxScore
+	}
+	return score
+}
+
+func buildMatchingMap(answers []model.Answer) map[string][][]string {
+	m := make(map[string][][]string)
+	for _, a := range answers {
+		if len(a.MatchingPairs) > 0 {
+			m[a.QuestionID] = a.MatchingPairs
+		}
+	}
+	return m
+}
+
+func gradeMatching(options []model.Option, pairs [][]string, maxScore int) int {
+	if len(options) == 0 || len(pairs) == 0 {
+		return 0
+	}
+	// Build correct pair map: left option ID -> right match_text
+	correct := make(map[string]string)
+	for _, o := range options {
+		if o.MatchText != "" {
+			correct[o.ID] = o.MatchText
+		}
+	}
+	correctCount := 0
+	for _, pair := range pairs {
+		if len(pair) != 2 {
+			continue
+		}
+		leftID, userMatch := pair[0], pair[1]
+		expectedRight := correct[leftID]
+		if expectedRight == "" {
+			continue
+		}
+		if userMatch == expectedRight {
+			correctCount++
+		}
+	}
+	if len(correct) == 0 {
+		return 0
+	}
+	return (correctCount * maxScore) / len(correct)
 }
 
 func optionIsCorrect(options []model.Option, optionID string) bool {

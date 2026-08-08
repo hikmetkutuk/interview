@@ -18,7 +18,7 @@ func NewOptionRepo(db *sqlx.DB) *OptionRepo {
 
 func (r *OptionRepo) FindByQuestionID(ctx context.Context, questionID string) ([]model.Option, error) {
 	var options []model.Option
-	err := r.db.SelectContext(ctx, &options, `SELECT id, question_id, text, is_correct, sort_order FROM options WHERE question_id=$1 ORDER BY sort_order`, questionID)
+	err := r.db.SelectContext(ctx, &options, `SELECT id, question_id, text, is_correct, match_text, sort_order FROM options WHERE question_id=$1 ORDER BY sort_order`, questionID)
 	return options, err
 }
 
@@ -31,13 +31,13 @@ func (r *OptionRepo) CreateTx(ctx context.Context, tx *sqlx.Tx, o *model.Option)
 }
 
 func (r *OptionRepo) create(ctx context.Context, queryer sqlx.ExtContext, o *model.Option) error {
-	query := `INSERT INTO options (question_id, text, is_correct, sort_order) VALUES ($1, $2, $3, $4) RETURNING id`
-	return queryer.QueryRowxContext(ctx, query, o.QuestionID, o.Text, o.IsCorrect, o.SortOrder).Scan(&o.ID)
+	query := `INSERT INTO options (question_id, text, is_correct, match_text, sort_order) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	return queryer.QueryRowxContext(ctx, query, o.QuestionID, o.Text, o.IsCorrect, o.MatchText, o.SortOrder).Scan(&o.ID)
 }
 
 func (r *OptionRepo) Update(ctx context.Context, o *model.Option) error {
-	query := `UPDATE options SET text=$1, is_correct=$2, sort_order=$3 WHERE id=$4`
-	_, err := r.db.ExecContext(ctx, query, o.Text, o.IsCorrect, o.SortOrder, o.ID)
+	query := `UPDATE options SET text=$1, is_correct=$2, match_text=$3, sort_order=$4 WHERE id=$5`
+	_, err := r.db.ExecContext(ctx, query, o.Text, o.IsCorrect, o.MatchText, o.SortOrder, o.ID)
 	return err
 }
 
