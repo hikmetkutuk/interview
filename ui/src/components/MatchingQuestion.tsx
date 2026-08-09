@@ -5,15 +5,31 @@ import { Badge } from "./ui/Badge";
 import { shuffle } from "../lib/shuffle";
 import type { Option } from "../types";
 
+function topicName(id: string): string {
+  const p = id.split("-")[0];
+  const m: Record<string, string> = {
+    di: "DI / Lifetime", async: "async/await", generic: "Generic",
+    delegate: "Delegate & Event", ienum: "IEnumerable / IQueryable / IList",
+    exception: "Exception Handling", valuetype: "Value Type / Reference Type",
+    gc: "GC / IDisposable", abstract: "Abstract / Interface",
+    lambda: "Lambda / Expression", linq: "LINQ", middleware: "Middleware",
+    efcore: "EF Core", reflection: "Reflection", extension: "Extension Methods",
+    record: "Records / Pattern Matching", nrt: "Nullable Reference Types",
+    modifiers: "Access Modifiers",
+  };
+  return m[p] || p;
+}
+
 interface Props {
   readonly options: Option[];
   readonly initialPairs?: Record<string, string>;
   readonly onPairsChange: (pairs: [string, string][]) => void;
   readonly questionIndex: number;
   readonly totalQuestions: number;
+  readonly questionId?: string;
 }
 
-export default function MatchingQuestion({ options, initialPairs, onPairsChange, questionIndex, totalQuestions }: Props) {
+export default function MatchingQuestion({ options, initialPairs, onPairsChange, questionIndex, totalQuestions, questionId }: Props) {
   const leftItems = (options || []).filter((o) => o.match_text);
   const rightValues = shuffle([...new Set(leftItems.map((o) => o.match_text))]);
 
@@ -30,7 +46,9 @@ export default function MatchingQuestion({ options, initialPairs, onPairsChange,
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <Badge variant="default">Question {questionIndex + 1} of {totalQuestions}</Badge>
-        <span className="text-xs text-muted-foreground font-mono">MATCHING</span>
+        <span className="text-xs text-muted-foreground">
+          {questionId ? topicName(questionId) : null}
+        </span>
       </div>
       <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
         <ArrowRightLeft className="h-4 w-4" />

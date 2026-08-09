@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -91,6 +92,8 @@ func (h *PublicHandler) GetQuiz(w http.ResponseWriter, r *http.Request) {
 	if questions == nil {
 		questions = []model.Question{}
 	}
+
+	questions = selectPerTopic(questions)
 
 	result := make([]model.QuestionWithOptions, 0, len(questions))
 	for _, q := range questions {
@@ -206,15 +209,27 @@ func (h *PublicHandler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Only grade questions the user submitted answers for
+	answeredIDs := make(map[string]bool)
+	for _, a := range req.Answers {
+		answeredIDs[a.QuestionID] = true
+	}
+	gradedQuestions := make([]model.Question, 0, len(questions))
+	for _, q := range questions {
+		if answeredIDs[q.ID] {
+			gradedQuestions = append(gradedQuestions, q)
+		}
+	}
+
 	userAnswers := buildUserAnswerMap(req.Answers)
 
-	totalScore, maxScore, details, err := h.gradeQuestions(r.Context(), questions, userAnswers)
+	totalScore, maxScore, details, err := h.gradeQuestions(r.Context(), gradedQuestions, userAnswers)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to grade quiz"})
 		return
 	}
 
-	s, ms, mds := h.gradeMatchingQuestions(r.Context(), questions, req.Answers)
+	s, ms, mds := h.gradeMatchingQuestions(r.Context(), gradedQuestions, req.Answers)
 	totalScore += s
 	maxScore += ms
 	details = append(details, mds...)
@@ -471,4 +486,56 @@ func optionIsCorrect(options []model.Option, optionID string) bool {
 		}
 	}
 	return false
+}
+
+func selectPerTopic(questions []model.Question) []model.Question {
+	topicMap := make(map[string][]model.Question)
+	for _, q := range questions {
+		t := detectTopic(q)
+		topicMap[t] = append(topicMap[t], q)
+	}
+	var result []model.Question
+	for _, qs := range topicMap {
+		for i := len(qs) - 1; i > 0; i-- {
+			jBig, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+			qs[i], qs[jBig.Int64()] = qs[jBig.Int64()], qs[i]
+		}
+		if len(qs) > 2 {
+			qs = qs[:2]
+		}
+		result = append(result, qs...)
+	}
+	for i := len(result) - 1; i > 0; i-- {
+		jBig, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		result[i], result[jBig.Int64()] = result[jBig.Int64()], result[i]
+	}
+	return result
+}
+
+func detectTopic(q model.Question) string {
+	// ID format: "di-001", "async-003", "modifiers-010"
+	parts := strings.SplitN(q.ID, "-", 2)
+	if len(parts) > 0 {
+		switch parts[0] {
+		case "di": return "DI / Lifetime"
+		case "async": return "async/await"
+		case "generic": return "Generic"
+		case "delegate": return "Delegate & Event"
+		case "ienum": return "IEnumerable / IQueryable / IList"
+		case "exception": return "Exception Handling"
+		case "valuetype": return "Value Type / Reference Type"
+		case "gc": return "GC / IDisposable"
+		case "abstract": return "Abstract / Interface"
+		case "lambda": return "Lambda / Expression"
+		case "linq": return "LINQ"
+		case "middleware": return "Middleware"
+		case "efcore": return "EF Core"
+		case "reflection": return "Reflection"
+		case "extension": return "Extension Methods"
+		case "record": return "Records / Pattern Matching"
+		case "nrt": return "Nullable Reference Types"
+		case "modifiers": return "Access Modifiers"
+		}
+	}
+	return "DI / Lifetime"
 }

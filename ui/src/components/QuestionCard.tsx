@@ -15,13 +15,28 @@ interface Props {
   readonly totalQuestions: number;
 }
 
+function topicName(id: string): string {
+  const p = id.split("-")[0];
+  const m: Record<string, string> = {
+    di: "DI / Lifetime", async: "async/await", generic: "Generic",
+    delegate: "Delegate & Event", ienum: "IEnumerable / IQueryable / IList",
+    exception: "Exception Handling", valuetype: "Value Type / Reference Type",
+    gc: "GC / IDisposable", abstract: "Abstract / Interface",
+    lambda: "Lambda / Expression", linq: "LINQ", middleware: "Middleware",
+    efcore: "EF Core", reflection: "Reflection", extension: "Extension Methods",
+    record: "Records / Pattern Matching", nrt: "Nullable Reference Types",
+    modifiers: "Access Modifiers",
+  };
+  return m[p] || p;
+}
+
 export default function QuestionCard({
   question, options, selectedIds, onSelect, matchingPairs, onMatchingPairs, questionIndex, totalQuestions,
 }: Props) {
   const isMulti = question.type === "maq";
 
   if (question.type === "matching" && onMatchingPairs) {
-    return <MatchingQuestion options={options || []} initialPairs={matchingPairs} onPairsChange={onMatchingPairs} questionIndex={questionIndex} totalQuestions={totalQuestions} />;
+    return <MatchingQuestion options={options || []} initialPairs={matchingPairs} onPairsChange={onMatchingPairs} questionIndex={questionIndex} totalQuestions={totalQuestions} questionId={question.id} />;
   }
 
   return (
@@ -30,12 +45,12 @@ export default function QuestionCard({
         <Badge variant="default">
           Question {questionIndex + 1} of {totalQuestions}
         </Badge>
-        <span className="text-xs text-muted-foreground font-mono">
-          {question.type.toUpperCase()}
+        <span className="text-xs text-muted-foreground">
+          {topicName(question.id)}
         </span>
       </div>
 
-      <h2 className="text-lg font-semibold text-foreground mb-3">{question.text}</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-3 break-words overflow-hidden">{question.text}</h2>
 
       {question.image_url && (
         <img src={question.image_url} alt="" className="max-w-full rounded-lg mb-3" />
