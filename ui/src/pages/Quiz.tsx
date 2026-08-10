@@ -80,7 +80,7 @@ export default function Quiz() {
 
   if (loading || !quiz) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-card rounded-lg w-1/3" />
           <div className="h-64 bg-card rounded-xl" />
@@ -91,7 +91,7 @@ export default function Quiz() {
 
   if (quiz.questions.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-16">
+      <div className="max-w-3xl mx-auto text-center py-16">
         <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
         <p className="text-muted-foreground mt-3">This quiz has no questions yet.</p>
         <Button className="mt-6" variant="outline" onClick={() => navigate(-1)}>
@@ -107,7 +107,7 @@ export default function Quiz() {
   const isLast = currentIdx === quiz.questions.length - 1;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>

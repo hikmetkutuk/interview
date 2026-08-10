@@ -56,15 +56,15 @@ export default function MatchingQuestion({ options, initialPairs, onPairsChange,
       </div>
       <div className="space-y-2">
         {leftItems.map((item) => (
-          <div key={item.id} className="flex items-center gap-3">
-            <div className="flex-1 p-3 rounded-lg border border-border bg-muted/30 text-sm font-medium">
+          <div key={item.id} className="grid grid-cols-[1fr_auto_1fr] gap-2 items-stretch">
+            <div className="p-3 rounded-lg border border-border bg-muted/30 text-sm font-medium break-words flex items-center">
               {item.text}
             </div>
-            <span className="text-muted-foreground text-sm">→</span>
+            <span className="text-muted-foreground text-sm flex items-center px-1">→</span>
             <select
               value={pairs[item.id] || ""}
               onChange={(e) => handleMatch(item.id, e.target.value)}
-              className="flex-1 h-11 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="h-full min-h-[44px] rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select...</option>
               {rightValues.map((rv) => (

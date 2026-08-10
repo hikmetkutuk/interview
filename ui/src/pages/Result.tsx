@@ -115,7 +115,7 @@ export default function Result() {
   const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.5 }}>
         <Card className={`text-center p-8 mb-8 border-2 ${result.passed ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"}`}>
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 bg-card border-2 border-border">
