@@ -538,6 +538,7 @@ func detectTopic(q model.Question) string {
 		case "solid": return "SOLID"
 		case "pattern": return "Tasarım Kalıpları"
 		case "microservice": return "Microservice"
+		case "eventual": return "Eventual Consistency"
 		}
 	}
 	return "DI / Lifetime"

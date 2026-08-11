@@ -29,6 +29,7 @@ function topicName(id: string): string {
     solid: "SOLID & Tasarım",
     pattern: "Tasarım Kalıpları",
     microservice: "Microservice",
+    eventual: "Eventual Consistency",
   };
   return m[p] || p;
 }
