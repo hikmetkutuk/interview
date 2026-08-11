@@ -535,6 +535,9 @@ func detectTopic(q model.Question) string {
 		case "record": return "Records / Pattern Matching"
 		case "nrt": return "Nullable Reference Types"
 		case "modifiers": return "Access Modifiers"
+		case "solid": return "SOLID"
+		case "pattern": return "Tasarım Kalıpları"
+		case "microservice": return "Microservice"
 		}
 	}
 	return "DI / Lifetime"

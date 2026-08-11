@@ -16,6 +16,9 @@ function topicName(id: string): string {
     efcore: "EF Core", reflection: "Reflection", extension: "Extension Methods",
     record: "Records / Pattern Matching", nrt: "Nullable Reference Types",
     modifiers: "Access Modifiers",
+    solid: "SOLID & Tasarım",
+    pattern: "Tasarım Kalıpları",
+    microservice: "Microservice",
   };
   return m[p] || p;
 }
