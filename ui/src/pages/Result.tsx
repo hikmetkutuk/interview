@@ -108,9 +108,20 @@ function MultipleChoiceResults({ d }: { readonly d: QuestionResult }) {
 
 export default function Result() {
   const location = useLocation();
-  const result = location.state as QuizResult | null;
+  const state = location.state as (QuizResult & { order?: string[] }) | null;
 
-  if (!result) return <Navigate to="/" replace />;
+  if (!state) return <Navigate to="/" replace />;
+
+  const result: QuizResult = {
+    ...state,
+    details: state.order
+      ? [...state.details].sort((a, b) => {
+          const ai = state.order!.indexOf(a.question.id);
+          const bi = state.order!.indexOf(b.question.id);
+          return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+        })
+      : state.details,
+  };
 
   const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
 
