@@ -27,9 +27,10 @@ interface Props {
   readonly questionIndex: number;
   readonly totalQuestions: number;
   readonly questionId?: string;
+  readonly questionText?: string;
 }
 
-export default function MatchingQuestion({ options, initialPairs, onPairsChange, questionIndex, totalQuestions, questionId }: Props) {
+export default function MatchingQuestion({ options, initialPairs, onPairsChange, questionIndex, totalQuestions, questionId, questionText }: Props) {
   const leftItems = (options || []).filter((o) => o.match_text);
   const rightValues = shuffle([...new Set(leftItems.map((o) => o.match_text))]);
 
@@ -50,6 +51,9 @@ export default function MatchingQuestion({ options, initialPairs, onPairsChange,
           {questionId ? topicName(questionId) : null}
         </span>
       </div>
+      {questionText && (
+        <h2 className="text-lg font-semibold text-foreground mb-3 break-words overflow-hidden">{questionText}</h2>
+      )}
       <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
         <ArrowRightLeft className="h-4 w-4" />
         Match each item with the correct value

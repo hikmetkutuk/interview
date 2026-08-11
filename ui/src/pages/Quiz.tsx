@@ -47,10 +47,12 @@ export default function Quiz() {
     if (submitted || !quiz) return;
     setSubmitted(true);
     const payload = {
-      answers: [
-        ...Object.entries(answers).map(([qid, oids]) => ({ question_id: qid, selected_option_ids: oids })),
-        ...Object.entries(matchingPairs).map(([qid, pairs]) => ({ question_id: qid, selected_option_ids: [], matching_pairs: pairs })),
-      ],
+      answers: quiz.questions.map((q) => {
+        if (q.type === "matching") {
+          return { question_id: q.id, selected_option_ids: [], matching_pairs: matchingPairs[q.id] || [] };
+        }
+        return { question_id: q.id, selected_option_ids: answers[q.id] || [] };
+      }),
     };
     api.post<QuizResult>(`/quizzes/${id}/submit`, payload)
       .then((res) => { localStorage.removeItem("quiz-matching"); navigate("/result", { state: { ...res.data, order: quiz.questions.map((q) => q.id) } }); })

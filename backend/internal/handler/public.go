@@ -209,7 +209,7 @@ func (h *PublicHandler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Only grade questions the user submitted answers for
+	// Grade only the questions included in the submission (the set shown to the user).
 	answeredIDs := make(map[string]bool)
 	for _, a := range req.Answers {
 		answeredIDs[a.QuestionID] = true

@@ -36,7 +36,7 @@ export default function QuestionCard({
   const isMulti = question.type === "maq";
 
   if (question.type === "matching" && onMatchingPairs) {
-    return <MatchingQuestion options={options || []} initialPairs={matchingPairs} onPairsChange={onMatchingPairs} questionIndex={questionIndex} totalQuestions={totalQuestions} questionId={question.id} />;
+    return <MatchingQuestion options={options || []} initialPairs={matchingPairs} onPairsChange={onMatchingPairs} questionIndex={questionIndex} totalQuestions={totalQuestions} questionId={question.id} questionText={question.text} />;
   }
 
   return (
