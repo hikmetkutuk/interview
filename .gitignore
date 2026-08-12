@@ -22,6 +22,7 @@ Thumbs.db
 
 # Project
 todo.md
+quiz_backup.sql
 
 # Docker
 .env
