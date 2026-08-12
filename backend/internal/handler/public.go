@@ -512,34 +512,56 @@ func selectPerTopic(questions []model.Question) []model.Question {
 	return result
 }
 
+var topicByPrefix = map[string]string{
+	"di":            "DI / Lifetime",
+	"async":         "async/await",
+	"generic":       "Generic",
+	"delegate":      "Delegate & Event",
+	"ienum":         "IEnumerable / IQueryable / IList",
+	"exception":     "Exception Handling",
+	"valuetype":     "Value Type / Reference Type",
+	"gc":            "GC / IDisposable",
+	"abstract":      "Abstract / Interface",
+	"lambda":        "Lambda / Expression",
+	"linq":          "LINQ",
+	"middleware":    "Middleware",
+	"efcore":        "EF Core",
+	"reflection":    "Reflection",
+	"extension":     "Extension Methods",
+	"record":        "Records / Pattern Matching",
+	"nrt":           "Nullable Reference Types",
+	"modifiers":     "Access Modifiers",
+	"solid":         "SOLID",
+	"pattern":       "Tasarım Kalıpları",
+	"microservice":  "Microservice",
+	"eventual":      "Eventual Consistency",
+	"cleanarch":     "Clean Architecture",
+	"cqrs":          "CQRS",
+	"ddd":           "DDD",
+	"apiver":        "API Versioning",
+	"resilience":    "Resilience Patterns",
+	"caching":       "Caching Strategies",
+	"observability": "Observability",
+	"ratelimit":     "Rate Limiting",
+	"cap":           "CAP Theorem",
+	"idempotent":    "Idempotent API",
+	"hexagonal":     "Hexagonal Architecture",
+	"gateway":       "API Gateway / BFF",
+	"distlock":      "Distributed Systems",
+	"strangler":     "Strangler Fig",
+	"multitenancy":  "Multi-Tenancy",
+	"featureflag":   "Feature Flags",
+	"healthcheck":   "Health Checks",
+	"deployment":    "Deployment",
+	"security":      "Security Architecture",
+	"sharding":      "Sharding",
+	"verticalslice": "Vertical Slice",
+}
+
 func detectTopic(q model.Question) string {
-	// ID format: "di-001", "async-003", "modifiers-010"
-	parts := strings.SplitN(q.ID, "-", 2)
-	if len(parts) > 0 {
-		switch parts[0] {
-		case "di": return "DI / Lifetime"
-		case "async": return "async/await"
-		case "generic": return "Generic"
-		case "delegate": return "Delegate & Event"
-		case "ienum": return "IEnumerable / IQueryable / IList"
-		case "exception": return "Exception Handling"
-		case "valuetype": return "Value Type / Reference Type"
-		case "gc": return "GC / IDisposable"
-		case "abstract": return "Abstract / Interface"
-		case "lambda": return "Lambda / Expression"
-		case "linq": return "LINQ"
-		case "middleware": return "Middleware"
-		case "efcore": return "EF Core"
-		case "reflection": return "Reflection"
-		case "extension": return "Extension Methods"
-		case "record": return "Records / Pattern Matching"
-		case "nrt": return "Nullable Reference Types"
-		case "modifiers": return "Access Modifiers"
-		case "solid": return "SOLID"
-		case "pattern": return "Tasarım Kalıpları"
-		case "microservice": return "Microservice"
-		case "eventual": return "Eventual Consistency"
-		}
+	prefix, _, _ := strings.Cut(q.ID, "-")
+	if topic, ok := topicByPrefix[prefix]; ok {
+		return topic
 	}
 	return "DI / Lifetime"
 }
