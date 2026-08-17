@@ -93,7 +93,7 @@ export default function MatchingQuestion({ options, initialPairs, onPairsChange,
             <select
               value={pairs[item.id] || ""}
               onChange={(e) => handleMatch(item.id, e.target.value)}
-              className="h-full min-h-[44px] rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="h-full min-h-[44px] w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select...</option>
               {rightValues.map((rv) => (
