@@ -18,6 +18,15 @@ interface Props {
 function topicName(id: string): string {
   const p = id.split("-")[0];
   const m: Record<string, string> = {
+    oop: "OOP Prensipleri",
+    abstraction: "Abstraction / Polymorphism",
+    inheritance: "Inheritance / Composition",
+    polymorphism: "Overloading / Overriding",
+    encapsulation: "Encapsulation",
+    singleton: "Singleton / Thread Safety",
+    srpocpdip: "SRP / OCP / DIP",
+    lsp: "Liskov Substitution",
+    isp: "Interface Segregation",
     di: "DI / Lifetime", async: "async/await", generic: "Generic",
     delegate: "Delegate & Event", ienum: "IEnumerable / IQueryable / IList",
     exception: "Exception Handling", valuetype: "Value Type / Reference Type",

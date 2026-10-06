@@ -513,6 +513,15 @@ func selectPerTopic(questions []model.Question) []model.Question {
 }
 
 var topicByPrefix = map[string]string{
+	"oop":           "OOP Prensipleri",
+	"abstraction":   "Abstraction / Polymorphism",
+	"inheritance":   "Inheritance / Composition",
+	"polymorphism":  "Overloading / Overriding",
+	"encapsulation": "Encapsulation",
+	"singleton":     "Singleton / Thread Safety",
+	"srpocpdip":     "SRP / OCP / DIP",
+	"lsp":           "Liskov Substitution",
+	"isp":           "Interface Segregation",
 	"di":            "DI / Lifetime",
 	"async":         "async/await",
 	"generic":       "Generic",
