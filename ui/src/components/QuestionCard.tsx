@@ -15,7 +15,27 @@ interface Props {
   readonly totalQuestions: number;
 }
 
+const topicByQuestionID: Record<string, string> = {
+  "java-001": "Java Strings",
+  "java-002": "Java HashMap / Equality",
+  "java-003": "Java Concurrent Cache",
+  "java-004": "Java Strings",
+  "java-005": "Java Immutability / Copying",
+  "java-006": "Java Stack / Heap",
+  "java-007": "Java Exceptions",
+  "java-008": "Java Exceptions",
+  "java-009": "Java Reflection",
+  "java-010": "Java Static / Shared State",
+  "java-011": "Java Collections",
+  "java-012": "Java Immutability / Copying",
+  "java-013": "Java Pass-by-Value",
+  "java-014": "Java Generics / Erasure",
+  "java-015": "Java Iterators",
+  "java-016": "Java Optional",
+};
+
 function topicName(id: string): string {
+  if (topicByQuestionID[id]) return topicByQuestionID[id];
   const p = id.split("-")[0];
   const m: Record<string, string> = {
     oop: "OOP Prensipleri",

@@ -567,7 +567,29 @@ var topicByPrefix = map[string]string{
 	"verticalslice": "Vertical Slice",
 }
 
+var topicByQuestionID = map[string]string{
+	"java-001": "Java Strings",
+	"java-002": "Java HashMap / Equality",
+	"java-003": "Java Concurrent Cache",
+	"java-004": "Java Strings",
+	"java-005": "Java Immutability / Copying",
+	"java-006": "Java Stack / Heap",
+	"java-007": "Java Exceptions",
+	"java-008": "Java Exceptions",
+	"java-009": "Java Reflection",
+	"java-010": "Java Static / Shared State",
+	"java-011": "Java Collections",
+	"java-012": "Java Immutability / Copying",
+	"java-013": "Java Pass-by-Value",
+	"java-014": "Java Generics / Erasure",
+	"java-015": "Java Iterators",
+	"java-016": "Java Optional",
+}
+
 func detectTopic(q model.Question) string {
+	if topic, ok := topicByQuestionID[q.ID]; ok {
+		return topic
+	}
 	prefix, _, _ := strings.Cut(q.ID, "-")
 	if topic, ok := topicByPrefix[prefix]; ok {
 		return topic
