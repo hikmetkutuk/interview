@@ -588,6 +588,14 @@ var topicByPrefix = map[string]string{
 }
 
 var topicByQuestionID = map[string]string{
+	"oop-001":  "OOP Prensipleri",
+	"oop-002":  "Tasarım Kalıpları",
+	"oop-003":  "SOLID",
+	"oop-004":  "Interface / Abstract Class",
+	"oop-005":  "Abstraction / Polymorphism",
+	"oop-006":  "Inheritance / Composition",
+	"oop-007":  "Overloading / Overriding",
+	"oop-008":  "Encapsulation",
 	"java-001": "Java Strings",
 	"java-002": "Java Concurrent Counters",
 	"java-003": "Java Resources / Finalization",

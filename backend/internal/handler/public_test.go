@@ -100,3 +100,25 @@ func TestDetectTopicForAlternative(t *testing.T) {
 		t.Fatalf("alternative topic %q differs from base topic %q", got, want)
 	}
 }
+
+func TestDetectOOPTopics(t *testing.T) {
+	topics := map[string]string{
+		"oop-001": "OOP Prensipleri",
+		"oop-002": "Tasarım Kalıpları",
+		"oop-003": "SOLID",
+		"oop-004": "Interface / Abstract Class",
+		"oop-005": "Abstraction / Polymorphism",
+		"oop-006": "Inheritance / Composition",
+		"oop-007": "Overloading / Overriding",
+		"oop-008": "Encapsulation",
+	}
+	for id, want := range topics {
+		for _, suffix := range []string{"", "b"} {
+			t.Run(id+suffix, func(t *testing.T) {
+				if got := detectTopic(model.Question{ID: id + suffix}); got != want {
+					t.Fatalf("topic = %q, want %q", got, want)
+				}
+			})
+		}
+	}
+}
