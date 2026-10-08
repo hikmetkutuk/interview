@@ -17,25 +17,22 @@ interface Props {
 
 const topicByQuestionID: Record<string, string> = {
   "java-001": "Java Strings",
-  "java-002": "Java HashMap / Equality",
-  "java-003": "Java Concurrent Cache",
-  "java-004": "Java Strings",
-  "java-005": "Java Immutability / Copying",
-  "java-006": "Java Stack / Heap",
-  "java-007": "Java Exceptions",
+  "java-002": "Java Concurrent Counters",
+  "java-003": "Java Resources / Finalization",
+  "java-004": "Java Reflection / Annotations",
+  "java-005": "Java Inner Classes / GC",
+  "java-006": "Java HashMap / Equality",
+  "java-007": "Java Stack / Heap",
   "java-008": "Java Exceptions",
-  "java-009": "Java Reflection",
-  "java-010": "Java Static / Shared State",
-  "java-011": "Java Collections",
+  "java-009": "Java Collections",
+  "java-010": "Java Boxing / Strings",
+  "java-011": "Java Immutability / Copying",
   "java-012": "Java Immutability / Copying",
-  "java-013": "Java Pass-by-Value",
-  "java-014": "Java Generics / Erasure",
-  "java-015": "Java Iterators",
-  "java-016": "Java Optional",
 };
 
 function topicName(id: string): string {
-  if (topicByQuestionID[id]) return topicByQuestionID[id];
+  const groupId = id.endsWith("b") ? id.slice(0, -1) : id;
+  if (topicByQuestionID[groupId]) return topicByQuestionID[groupId];
   const p = id.split("-")[0];
   const m: Record<string, string> = {
     oop: "OOP Prensipleri",

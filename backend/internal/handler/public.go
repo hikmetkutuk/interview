@@ -489,27 +489,47 @@ func optionIsCorrect(options []model.Option, optionID string) bool {
 }
 
 func selectPerTopic(questions []model.Question) []model.Question {
+	questionByID := make(map[string]model.Question, len(questions))
+	for _, q := range questions {
+		questionByID[q.ID] = q
+	}
+	pairedGroups := make(map[string][]model.Question)
 	topicMap := make(map[string][]model.Question)
 	for _, q := range questions {
+		groupID := strings.TrimSuffix(q.ID, "b")
+		a, hasA := questionByID[groupID]
+		b, hasB := questionByID[groupID+"b"]
+		if hasA && hasB && a.QuizID == b.QuizID && a.SortOrder == b.SortOrder {
+			pairedGroups[groupID] = append(pairedGroups[groupID], q)
+			continue
+		}
 		t := detectTopic(q)
 		topicMap[t] = append(topicMap[t], q)
 	}
-	var result []model.Question
+	result := make([]model.Question, 0, len(questions))
+	for _, qs := range pairedGroups {
+		shuffleQuestions(qs)
+		result = append(result, qs[0])
+	}
 	for _, qs := range topicMap {
-		for i := len(qs) - 1; i > 0; i-- {
-			jBig, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
-			qs[i], qs[jBig.Int64()] = qs[jBig.Int64()], qs[i]
-		}
+		shuffleQuestions(qs)
 		if len(qs) > 2 {
 			qs = qs[:2]
 		}
 		result = append(result, qs...)
 	}
-	for i := len(result) - 1; i > 0; i-- {
-		jBig, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
-		result[i], result[jBig.Int64()] = result[jBig.Int64()], result[i]
-	}
+	shuffleQuestions(result)
 	return result
+}
+
+func shuffleQuestions(questions []model.Question) {
+	for i := len(questions) - 1; i > 0; i-- {
+		jBig, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			return
+		}
+		questions[i], questions[jBig.Int64()] = questions[jBig.Int64()], questions[i]
+	}
 }
 
 var topicByPrefix = map[string]string{
@@ -569,25 +589,21 @@ var topicByPrefix = map[string]string{
 
 var topicByQuestionID = map[string]string{
 	"java-001": "Java Strings",
-	"java-002": "Java HashMap / Equality",
-	"java-003": "Java Concurrent Cache",
-	"java-004": "Java Strings",
-	"java-005": "Java Immutability / Copying",
-	"java-006": "Java Stack / Heap",
-	"java-007": "Java Exceptions",
+	"java-002": "Java Concurrent Counters",
+	"java-003": "Java Resources / Finalization",
+	"java-004": "Java Reflection / Annotations",
+	"java-005": "Java Inner Classes / GC",
+	"java-006": "Java HashMap / Equality",
+	"java-007": "Java Stack / Heap",
 	"java-008": "Java Exceptions",
-	"java-009": "Java Reflection",
-	"java-010": "Java Static / Shared State",
-	"java-011": "Java Collections",
+	"java-009": "Java Collections",
+	"java-010": "Java Boxing / Strings",
+	"java-011": "Java Immutability / Copying",
 	"java-012": "Java Immutability / Copying",
-	"java-013": "Java Pass-by-Value",
-	"java-014": "Java Generics / Erasure",
-	"java-015": "Java Iterators",
-	"java-016": "Java Optional",
 }
 
 func detectTopic(q model.Question) string {
-	if topic, ok := topicByQuestionID[q.ID]; ok {
+	if topic, ok := topicByQuestionID[strings.TrimSuffix(q.ID, "b")]; ok {
 		return topic
 	}
 	prefix, _, _ := strings.Cut(q.ID, "-")
