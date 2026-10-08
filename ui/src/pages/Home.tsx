@@ -9,6 +9,7 @@ import type { Category } from "../types";
 
 const iconMap: Record<string, LucideIcon> = {
   java: Code2,
+  "modern-java": Code2,
   javascript: Code2,
   typescript: Code2,
   python: Cpu,

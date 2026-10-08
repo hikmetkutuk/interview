@@ -16,6 +16,14 @@ interface Props {
 }
 
 const topicByQuestionID: Record<string, string> = {
+  "mj-001": "Stream API",
+  "mj-002": "Optional",
+  "mj-003": "Lambda / Functional Interface",
+  "mj-004": "Record",
+  "mj-005": "Sealed Classes / Pattern Matching",
+  "mj-006": "var / Switch Expressions",
+  "mj-007": "Generics / Wildcards / PECS",
+  "mj-008": "Java LTS / Virtual Threads / ScopedValue",
   "oop-001": "OOP Prensipleri",
   "oop-002": "Tasarım Kalıpları",
   "oop-003": "SOLID",

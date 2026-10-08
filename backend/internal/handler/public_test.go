@@ -9,7 +9,7 @@ import (
 )
 
 func TestSelectPerTopicSelectsOnePerPair(t *testing.T) {
-	for _, prefix := range []string{"java", "solid-oop"} {
+	for _, prefix := range []string{"java", "solid-oop", "mj"} {
 		t.Run(prefix, func(t *testing.T) {
 			questions := make([]model.Question, 0, 24)
 			for i := 1; i <= 12; i++ {
@@ -111,6 +111,28 @@ func TestDetectOOPTopics(t *testing.T) {
 		"oop-006": "Inheritance / Composition",
 		"oop-007": "Overloading / Overriding",
 		"oop-008": "Encapsulation",
+	}
+	for id, want := range topics {
+		for _, suffix := range []string{"", "b"} {
+			t.Run(id+suffix, func(t *testing.T) {
+				if got := detectTopic(model.Question{ID: id + suffix}); got != want {
+					t.Fatalf("topic = %q, want %q", got, want)
+				}
+			})
+		}
+	}
+}
+
+func TestDetectModernJavaTopics(t *testing.T) {
+	topics := map[string]string{
+		"mj-001": "Stream API",
+		"mj-002": "Optional",
+		"mj-003": "Lambda / Functional Interface",
+		"mj-004": "Record",
+		"mj-005": "Sealed Classes / Pattern Matching",
+		"mj-006": "var / Switch Expressions",
+		"mj-007": "Generics / Wildcards / PECS",
+		"mj-008": "Java LTS / Virtual Threads / ScopedValue",
 	}
 	for id, want := range topics {
 		for _, suffix := range []string{"", "b"} {
