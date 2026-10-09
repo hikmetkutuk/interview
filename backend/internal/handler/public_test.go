@@ -15,7 +15,7 @@ const (
 )
 
 func TestSelectPerTopicSelectsOnePerPair(t *testing.T) {
-	for _, prefix := range []string{"java", "solid-oop", "mj"} {
+	for _, prefix := range []string{"java", "solid-oop", "mj", "spring"} {
 		t.Run(prefix, func(t *testing.T) {
 			questions := make([]model.Question, 0, 24)
 			for i := 1; i <= 12; i++ {
@@ -143,6 +143,32 @@ func TestDetectModernJavaTopics(t *testing.T) {
 		"mj-006": "var / Switch Expressions",
 		"mj-007": "Generics / Wildcards / PECS",
 		"mj-008": "Java LTS / Virtual Threads / ScopedValue",
+	}
+	for id, want := range topics {
+		for _, suffix := range []string{"", "b"} {
+			t.Run(id+suffix, func(t *testing.T) {
+				if got := detectTopic(model.Question{ID: id + suffix}); got != want {
+					t.Fatalf("topic = %q, want %q", got, want)
+				}
+			})
+		}
+	}
+}
+
+func TestDetectSpringTopics(t *testing.T) {
+	topics := map[string]string{
+		"spring-001": "ApplicationContext / BeanFactory",
+		"spring-002": "Bean Yaşam Döngüsü",
+		"spring-003": "IoC / DI / AOP",
+		"spring-004": "Spring Boot",
+		"spring-005": "Auto-configuration",
+		"spring-006": "Spring Design Patterns",
+		"spring-007": "DispatcherServlet / MVC Akışı",
+		"spring-008": "Annotation Mekanizması",
+		"spring-009": "Transactional",
+		"spring-010": "Bean Scope",
+		"spring-011": "Stereotype / Bean",
+		"spring-012": "Injection Türleri",
 	}
 	for id, want := range topics {
 		for _, suffix := range []string{"", "b"} {
